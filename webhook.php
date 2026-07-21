@@ -1,48 +1,11 @@
 <?php
 // ==========================================
 // 👑 MEENA DYNASTY - VIP PRIVACY PROXY WALL
-// INTEGRATION: MYSQL (TERMUX) + FIREBASE + META API
-// SYSTEM: ENTERPRISE LEVEL ARCHITECTURE
+// INTEGRATION: MYSQL + FIREBASE + META API
 // ==========================================
 
 // ------------------------------------------
-// 1. DATABASE CONNECTION (HIGH SECURITY)
-// ------------------------------------------
-$db_host = "sql211.infinityfree.com";
-$db_user = "if0_40880172";
-$db_pass = "Rishi7665";
-$db_name = "if0_40880172_dynasty_bot";
-
-$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
-if ($conn->connect_error) {
-    die(json_encode(["status" => "error", "message" => "DB Connection Failed"]));
-}
-$conn->set_charset("utf8mb4");
-
-// ------------------------------------------
-// 2. WEBSITE SIGNAL (Prepared Statements के साथ)
-// ------------------------------------------
-if (isset($_REQUEST['sender_phone']) && isset($_REQUEST['receiver_phone'])) {
-    header('Content-Type: application/json');
-    $sender_phone = $_REQUEST['sender_phone'];
-    $receiver_phone = $_REQUEST['receiver_phone'];
-    $sender_id = isset($_REQUEST['sender_id']) ? $_REQUEST['sender_id'] : 'NONE';
-
-    // SQL Injection से बचने के लिए Prepared Statement का उपयोग (Premium Security)
-    $stmt = $conn->prepare("INSERT INTO connection_requests (sender_phone, receiver_phone, status, sender_id) VALUES (?, ?, 'pending', ?)");
-    $stmt->bind_param("sss", $sender_phone, $receiver_phone, $sender_id);
-    
-    if ($stmt->execute()) {
-        echo json_encode(["status" => "success", "message" => "Request stored securely for Termux Bot"]);
-    } else {
-        echo json_encode(["status" => "error", "message" => "Database Error"]);
-    }
-    $stmt->close();
-    exit;
-}
-
-// ------------------------------------------
-// 3. META API & FIREBASE CONFIGURATION (YOUR CREDENTIALS)
+// 1. CONFIGURATION CREDENTIALS
 // ------------------------------------------
 $verify_token    = "Meena_Biodata_Secure_Token_123";
 $access_token    = "EAAO9cTe8B0ABR0viE2AOTVqZAwXjNHwTqZCXlOJBQirEIULVaZAYHkg7NZAd9XRsuMfzFI2cJljriGEtR51fjtaIzkbpuoVTdUmZCcb4p2d8Ltu7h9ViNYTIg65l221TWZA5nlGkP6v6H1AngXwyyJzUF5V4Jt3m2ZBkiuZCrYoZAifVzBGGKRgpDeZAjHZAjINoIZAP9QZDZD";
@@ -52,7 +15,73 @@ $firebase_url    = "https://meena-marriage-default-rtdb.asia-southeast1.firebase
 $firebase_secret = "KLEHB8GIs2PxUIobazUAGHsObWz2AT1Gtqjk83tV"; 
 
 // ------------------------------------------
-// 4. ADVANCED HELPER FUNCTIONS
+// 2. META WEBHOOK VERIFICATION (GET REQUEST)
+// ------------------------------------------
+// यह हिस्सा डेटाबेस से पूरी तरह अलग है ताकि Meta Verification 100% पास हो सके
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (isset($_GET['hub_mode']) && isset($_GET['hub_verify_token'])) {
+        if ($_GET['hub_mode'] === 'subscribe' && $_GET['hub_verify_token'] === $verify_token) {
+            echo $_GET['hub_challenge'];
+            http_response_code(200);
+            exit;
+        } else {
+            http_response_code(403);
+            echo "Token Mismatch";
+            exit;
+        }
+    }
+}
+
+// ------------------------------------------
+// 3. DATABASE HELPER FUNCTION (SAFE CONNECTION)
+// ------------------------------------------
+function get_db_connection() {
+    $db_host = "sql211.infinityfree.com";
+    $db_user = "if0_40880172";
+    $db_pass = "Rishi7665";
+    $db_name = "if0_40880172_dynasty_bot";
+
+    // Silence errors to prevent crashes if remote MySQL fails
+    $conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
+    if ($conn->connect_error) {
+        log_debug("DB Connection Failed: " . $conn->connect_error);
+        return false;
+    }
+    $conn->set_charset("utf8mb4");
+    return $conn;
+}
+
+// ------------------------------------------
+// 4. WEBSITE SIGNAL (API ENDPOINT)
+// ------------------------------------------
+if (isset($_REQUEST['sender_phone']) && isset($_REQUEST['receiver_phone'])) {
+    header('Content-Type: application/json');
+    $conn = get_db_connection();
+    
+    if (!$conn) {
+        echo json_encode(["status" => "error", "message" => "DB Connection Failed"]);
+        exit;
+    }
+
+    $sender_phone = $_REQUEST['sender_phone'];
+    $receiver_phone = $_REQUEST['receiver_phone'];
+    $sender_id = isset($_REQUEST['sender_id']) ? $_REQUEST['sender_id'] : 'NONE';
+
+    $stmt = $conn->prepare("INSERT INTO connection_requests (sender_phone, receiver_phone, status, sender_id) VALUES (?, ?, 'pending', ?)");
+    $stmt->bind_param("sss", $sender_phone, $receiver_phone, $sender_id);
+    
+    if ($stmt->execute()) {
+        echo json_encode(["status" => "success", "message" => "Request stored securely"]);
+    } else {
+        echo json_encode(["status" => "error", "message" => "Database Error"]);
+    }
+    $stmt->close();
+    $conn->close();
+    exit;
+}
+
+// ------------------------------------------
+// 5. ADVANCED HELPER FUNCTIONS
 // ------------------------------------------
 function log_debug($msg) {
     file_put_contents('whatsapp_log.txt', date('Y-m-d H:i:s') . " - " . $msg . "\n", FILE_APPEND);
@@ -71,7 +100,7 @@ function firebase_request($url, $method = 'GET', $data = null) {
     }
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10); // 10 Sec Timeout to prevent server crash
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     $res = curl_exec($ch);
     curl_close($ch);
     return json_decode($res, true);
@@ -113,18 +142,7 @@ function send_whatsapp_api($to, $type, $content, $phone_id, $token) {
 }
 
 // ------------------------------------------
-// 5. WEBHOOK VERIFICATION (GET)
-// ------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['hub_mode'])) {
-    if ($_GET['hub_mode'] === 'subscribe' && $_GET['hub_verify_token'] === $verify_token) {
-        echo $_GET['hub_challenge'];
-        http_response_code(200);
-        exit;
-    }
-}
-
-// ------------------------------------------
-// 6. MESSAGE RECEIVING & ROUTING (POST)
+// 6. MESSAGE RECEIVING & ROUTING (POST REQUEST)
 // ------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = file_get_contents('php://input');
@@ -146,17 +164,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $target = $session_info['target'];
                 
                 if ($button_id === 'btn_accept') {
-                    $stmt = $conn->prepare("INSERT INTO connection_requests (sender_phone, receiver_phone, status) VALUES (?, ?, 'pending')");
-                    $stmt->bind_param("ss", $sender_number, $target);
-                    $stmt->execute();
-                    $stmt->close();
+                    $conn = get_db_connection();
+                    if ($conn) {
+                        $stmt = $conn->prepare("INSERT INTO connection_requests (sender_phone, receiver_phone, status) VALUES (?, ?, 'pending')");
+                        $stmt->bind_param("ss", $sender_number, $target);
+                        $stmt->execute();
+                        $stmt->close();
+                        $conn->close();
+                    }
                     
                     send_whatsapp_api($sender_number, 'text', "✅ *कनेक्शन सफल!*\nअब आप यहाँ जो भी लिखेंगे, वह सुरक्षित रूप से उन्हें भेज दिया जाएगा।\n\n*(चैट बंद करने के लिए किसी भी समय 'STOP' टाइप करें)*", $phone_number_id, $access_token);
                     send_whatsapp_api($target, 'text', "🎉 सामने वाले ने आपसे बात करना स्वीकार कर लिया है! अब आप अपना मैसेज भेज सकते हैं।\n\n*(चैट बंद करने के लिए किसी भी समय 'STOP' टाइप करें)*", $phone_number_id, $access_token);
                 } else {
                     send_whatsapp_api($sender_number, 'text', "❌ आपने इस चैट को मना कर दिया है।", $phone_number_id, $access_token);
                     send_whatsapp_api($target, 'text', "माफ़ करें, सामने वाले यूज़र अभी बात करने के लिए उपलब्ध नहीं हैं।", $phone_number_id, $access_token);
-                    // डिलीट सेशन
+                    
                     firebase_request($firebase_url . '/whatsapp_sessions/' . $sender_number . '.json', 'DELETE');
                     firebase_request($firebase_url . '/whatsapp_sessions/' . $target . '.json', 'DELETE');
                 }
@@ -170,7 +192,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $sender_number = $msg_obj['from'];
             $message_text = trim($msg_obj['text']['body']); 
 
-            // --- PREMIUM FEATURE: STOP COMMAND TO END CHAT ---
             if (strtoupper($message_text) === 'STOP' || $message_text === 'स्टॉप') {
                 $session_info = firebase_request($firebase_url . '/whatsapp_sessions/' . $sender_number . '.json', 'GET');
                 if (!empty($session_info) && isset($session_info['target'])) {
@@ -182,7 +203,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     send_whatsapp_api($target, 'text', "🚫 सामने वाले यूज़र ने चैट समाप्त कर दी है। यह कनेक्शन अब बंद हो चुका है।", $phone_number_id, $access_token);
                 }
             }
-            // --- NEW CONNECTION REGEX MATCH ---
             elseif (preg_match('/Profile ID:\s*([A-Za-z0-9_-]+).*?My ID:\s*([A-Za-z0-9_-]+)/is', $message_text, $matches)) {
                 $target_id = trim($matches[1]);
                 $sender_id = trim($matches[2]);
@@ -216,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $t_native = $t_profile['native'] ?? '-';
 
                         $vip_message = "༺👑═༻༺═👑༻\n💛👑 *MEENA DYNASTY* 👑💛\n✨ Meena Rishton Ka Sangam ✨🤝\n༺══════👑══════༻\n\n";
-                        $vip_message .= "नमस्कार 🙏\nहमने आपकी प्रोफाइल:\n\n";
+                        $vip_message .= "नमस्कार 🙏\n हमने आपकी प्रोफाइल:\n\n";
                         $vip_message .= "👤 Name: {$t_name}\n🎂 DOB/Age: {$t_dob} ({$t_age})\n📏 Height: {$t_height}\n";
                         $vip_message .= "💼 Job: {$t_job}\n🕉 Gotras: {$t_gotra_str}\n🏙 City: {$t_city}\n🏡 Native: {$t_native}\n\n";
                         $vip_message .= "*MEENA DYNASTY* पर देखी है।\n\n";
@@ -245,7 +265,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
             } 
-            // --- RELAY MESSAGE (Proxy Wall) ---
             else {
                 $session_info = firebase_request($firebase_url . '/whatsapp_sessions/' . $sender_number . '.json', 'GET');
                 if (!empty($session_info) && isset($session_info['target'])) {

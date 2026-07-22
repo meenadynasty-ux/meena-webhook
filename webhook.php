@@ -5,7 +5,11 @@
 // ==========================================
 
 $verify_token    = "Meena_Biodata_Secure_Token_123";
-$access_token    = "EAAOqLdrjEfIBSI9mduPeoxNawKKznEH1eCmaqpX1RYMGjWZBk8rpwKmasZBeZAZAB76jkES8RhfPA2ZC9zhAawTJCTz4RUmsXf7bEhPHBfVAAu8S3zKVfObqMTIda7XbRSsfbD7FMC1sMZAi7tED1NRAZAx7orDkL0XmZCQE6uhXFvDZAZB8leZAQwCtT86GZB8hiyH49WozTREmiwKQPG4PCoULs8F2wEvUEdTf2M7yPWBYWoLJdo7jphUIhQjYZBLJ9rxwklqVR0E6V8scyeVOpwFESDhjYgLn8wpQ7jmt8MZB0a";
+
+// 👇 आपका नया परमानेंट टोकन यहाँ सेट कर दिया गया है 👇
+$access_token    = "EAAOqLdrjEfIBSDRmNyo7ujfpMb9ixZAILCdajTiBDtKAil2oghvG07SpQN6Hr2M8f6ZBFCRBBYtOZAL2j9TZAgk5hktZCZC6JlG5yf89ZACLpvYc12kFQt6rmTdfpcQcBQqqwSOhK8Dx7j6BMOcuSvqaBnQnYUiZC6mlXENk2UZApzrW6Gc7hqTdtPO1FhdWCcMxxDQZDZD";
+
+// 👇 आपकी सही Phone Number ID 👇
 $phone_number_id = "1168343493037440"; 
 
 $firebase_url    = "https://meena-marriage-default-rtdb.asia-southeast1.firebasedatabase.app";

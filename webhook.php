@@ -6,10 +6,10 @@
 
 $verify_token    = "Meena_Biodata_Secure_Token_123";
 
-// आपका परमानेंट टोकन
+// 👇 आपका सबसे नया परमानेंट टोकन 👇
 $access_token    = "EAAOqLdrjEfIBSPK2ZCm39fMsdfRprpl7RRyZCdi2UK678jTZCZCXXEDEwHrCIYNIiw01GePkJtd8XplZBEs20cCVZBmKhy1lVTt1y1NtDNZBNE3hcZB29Uyct1bqV0eAqpksDc0gpiBEf3HGX86MyiDZBrzmlCUy1jWbWA4pjTbyR1QMZC9NzaW0SnLFTmhinBnnwNOctv2XoNocRlyh6cBR4297MEedZBi1jRM9WYck9e9bCQ753ZCZAtsRFtjpCuK1zkKQCgpGh5Ydeww8XZBPnS3wOSLysQ3MPont2He9g4IydZA";
 
-// आपके असली नंबर (+91 89056 51034) की Phone Number ID
+// 👇 आपके असली नंबर (+91 89056 51034) की Phone Number ID 👇
 $phone_number_id = "1194552483746801"; 
 
 $firebase_url    = "https://meena-marriage-default-rtdb.asia-southeast1.firebasedatabase.app";
@@ -101,18 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($data['entry'][0]['changes'][0]['value']['messages'][0])) {
         $msg_obj = $data['entry'][0]['changes'][0]['value']['messages'][0];
         
-        // चेक करें कि मैसेज भेजने वाला आपका अपना नंबर (Admin) तो नहीं है
-        $sender_number = $msg_obj['from'];
-        $my_admin_number = "918905651034"; // आपका रजिस्टर्ड WhatsApp नंबर
-
-        // अगर एडमिन खुद मैसेज भेज रहा है, तो बॉट को रिप्लाई करने से रोक दें (ताकि लूप न बने)
-        if ($sender_number === $my_admin_number) {
-             http_response_code(200);
-             echo "OK";
-             exit;
-        }
-        
         if ($msg_obj['type'] === 'interactive') {
+            $sender_number = $msg_obj['from'];
             $button_id = $msg_obj['interactive']['button_reply']['id'];
             
             $session_info = firebase_request($firebase_url . '/whatsapp_sessions/' . $sender_number . '.json', 'GET');
@@ -139,6 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         elseif ($msg_obj['type'] === 'text') {
+            $sender_number = $msg_obj['from'];
             $message_text = trim($msg_obj['text']['body']); 
 
             if (strtoupper($message_text) === 'STOP' || $message_text === 'स्टॉप') {
@@ -151,12 +142,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     send_whatsapp_api($target, 'text', "🚫 सामने वाले यूज़र ने चैट समाप्त कर दी है।", $phone_number_id, $access_token);
                 }
             }
-            // 🚀 यह पैटर्न यूज़र द्वारा भेजे गए मैसेज में से ID पकड़ेगा 🚀
-            elseif (preg_match('/id=([A-Za-z0-9_-]+)/i', $message_text, $matches) || preg_match('/Profile ID:\s*([A-Za-z0-9_-]+)/i', $message_text, $matches)) {
-                
+            elseif (preg_match('/Profile ID:\s*([A-Za-z0-9_-]+).*?My ID:\s*([A-Za-z0-9_-]+)/is', $message_text, $matches)) {
                 $target_id = trim($matches[1]);
+                $sender_id = trim($matches[2]);
                 
-                // डेटाबेस में चेक करें
                 $target_data = firebase_request($firebase_url . '/profiles_v200.json?orderBy="id"&equalTo="' . $target_id . '"', 'GET');
                 
                 if (!empty($target_data) && !isset($target_data['error'])) {
@@ -175,19 +164,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         $vip_message = "💛👑 *MEENA DYNASTY* 👑💛\nनमस्कार 🙏\nकिसी ने आपकी प्रोफाइल में रूचि दिखाई है।\n\nआपकी प्रोफाइल लिंक: https://meenabiodata.infinityfree.me/?id={$target_id}";
                         
-                        // 1. सामने वाले यूज़र (जिसकी ID है) को बटन वाला मैसेज भेजें
                         send_whatsapp_api($target_number, 'interactive', $vip_message, $phone_number_id, $access_token);
-                        
-                        // 2. मैसेज भेजने वाले यूज़र को कन्फर्मेशन भेजें
                         send_whatsapp_api($sender_number, 'text', "✅ आपकी रिक्वेस्ट सफलतापूर्वक Profile ID: {$target_id} को भेज दी गई है!", $phone_number_id, $access_token);
                     }
                 } else {
-                    // अगर डेटाबेस में नहीं मिला, तो भेजने वाले यूज़र को एरर भेजें
-                    send_whatsapp_api($sender_number, 'text', "⚠️ यह Profile ID ({$target_id}) डेटाबेस में नहीं मिली। कृपया सही ID जाँचे।", $phone_number_id, $access_token);
+                    send_whatsapp_api($sender_number, 'text', "⚠️ यह Profile ID डेटाबेस में नहीं मिली। कृपया सही ID जाँचे।", $phone_number_id, $access_token);
                 }
             } 
             elseif (strtolower($message_text) === 'hi' || strtolower($message_text) === 'hello') {
-                send_whatsapp_api($sender_number, 'text', "नमस्ते! 🙏 Meena Dynasty Bot सक्रिय है।", $phone_number_id, $access_token);
+                send_whatsapp_api($sender_number, 'text', "नमस्ते! 🙏 Meena Dynasty Bot सक्रिय है। किसी से जुड़ने के लिए कृपया इस फॉर्मेट में मैसेज भेजें:\n\nProfile ID: [सामने वाले की ID]\nMy ID: [आपकी ID]", $phone_number_id, $access_token);
             }
             else {
                 $session_info = firebase_request($firebase_url . '/whatsapp_sessions/' . $sender_number . '.json', 'GET');

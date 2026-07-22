@@ -53,11 +53,11 @@ if (isset($_REQUEST['sender_phone']) && isset($_REQUEST['receiver_phone'])) {
 // ------------------------------------------
 $verify_token    = "Meena_Biodata_Secure_Token_123";
 
-// 👇 आपका बिल्कुल नया टोकन 👇
-$access_token    = "EAAOqLdrjEfIBSNGbftHGr3Y2booXZC8QI5VZCOBYrZBRlZAs3JRLDYmH2v7jw9n0ZBWbK2Ri2Xl8tYVV55IgZBzDXUfE8UG2EfFHZB6JE0VwtiF0m8iBBOkTSCX3Q8nLmurctEi1mQt7FWGnV14JvQNiSzj2GYDUAZB3GJIP2o58CKE62VPhqyHlXWZCwNLvIwkgHIgZDZD"; 
+// 👇 आपका लेटेस्ट वर्किंग टोकन 👇
+$access_token    = "EAAOqLdrjEfIBSGAnIzvpPD9P3dJAy5ER8lnkldVIeeAveYQxZAIUflNYWHtAVFwa4tgQ8HJkVOWWdmZB4YGZA35QSvNY6KD7Xx5RPQm00tLEBVU96kN7ezFPFBPQLWGamkO2QWXAm191ACoVSXyBW40HGlHRzvWTEMRupafhBTIbPqLVgOhmrGvnZC4F08zTU6DE1Q7rLvyvUnSCpOUPIs6bEwq8FxLlLRrJrpxfEFx6DeB2XE3Ybh6MNuS7nrtMhGmDZCEX5bXvZA7KoKI0giEvvT6P7OdpqGfQIkwgZDZD"; 
 
-// 👇 असली नंबर (+91 8...) की Phone Number ID 👇
-$phone_number_id = "1181713018363171"; 
+// 👇 सही Phone Number ID 👇
+$phone_number_id = "1168343493037440"; 
 
 $firebase_url    = "https://meena-marriage-default-rtdb.asia-southeast1.firebasedatabase.app";
 $firebase_secret = "KLEHB8GIs2PxUIobazUAGHsObWz2AT1Gtqjk83tV"; 
@@ -215,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     send_whatsapp_api($target, 'text', "🚫 सामने वाले यूज़र ने चैट समाप्त कर दी है। यह कनेक्शन अब बंद हो चुका है।", $phone_number_id, $access_token);
                 }
             }
-            // --- NEW CONNECTION REGEX MATCH (Works with links or plain ID text) ---
+            // --- NEW CONNECTION REGEX MATCH ---
             elseif (preg_match('/id=([A-Za-z0-9_-]+)/i', $message_text, $matches) || preg_match('/Profile ID:\s*([A-Za-z0-9_-]+)/i', $message_text, $matches)) {
                 $target_id = trim($matches[1]);
                 

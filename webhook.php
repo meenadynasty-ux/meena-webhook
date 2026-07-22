@@ -2,7 +2,7 @@
 // ==========================================
 // 👑 MEENA DYNASTY - VIP PRIVACY PROXY WALL
 // INTEGRATION: MYSQL + FIREBASE + META API v25.0
-// SYSTEM: MULTI FOLDER SEARCH + DYNAMIC ID + ERROR LOG
+// SYSTEM: MULTI FOLDER SEARCH + DYNAMIC ID + ERROR LOG (PERMANENT TOKEN)
 // ==========================================
 
 // ------------------------------------------
@@ -48,8 +48,8 @@ if (isset($_REQUEST['sender_phone']) && isset($_REQUEST['receiver_phone'])) {
 // ------------------------------------------
 $verify_token    = "Meena_Biodata_Secure_Token_123";
 
-// 👇 आपका लेटेस्ट टोकन 👇
-$access_token    = "EAAOqLdrjEfIBSOb5zMsAwsR2ll4h2HI8OkZAQYrFc6qCSKPt7gwFmA6VksZB85hw9Ylu57YVRhPJZCVmBtmKNTZAfvi97PtG6gv8V7aiIPy6O6ZBtoRdzcOtRMtOeHpCxSST3sAa2wU3h5BTZBM37sFxjPCwsvgsZAuH92fsZC8gpeP2qseexMhZC0LSxSSiXT0NXlJ1ZBkqburrkscoGtWFi4TMehrEEBg3zrgu6NdsBZBankpFNytygGrXut1xg8U0bQ5n1b6ItCZBshO7rCNAYq4J4uX07yubJZBbJlhDp6dsZD"; 
+// 👇 आपका बिलकुल नया परमानेंट टोकन 👇
+$access_token    = "EAAOqLdrjEfIBSLwVD2qIJ1POvP6GzkfZBh9KZAazbM2k1AK78K8qSqPdZAUV2qDWc19VApBTXbIePAx0Nhx9nWMQTZAAdUpZAvKT3MmpLfl2Jdw6aoZCWKcmfX36Ok4WkJX3T13f2vSOiVWvGK45rVuNStFWZB1Q3CHBrHmLalgAPWAZCmYaOqvsB6zoY618QHRkfwZDZD"; 
 
 $firebase_url    = "https://meena-marriage-default-rtdb.asia-southeast1.firebasedatabase.app";
 $firebase_secret = "KLEHB8GIs2PxUIobazUAGHsObWz2AT1Gtqjk83tV"; 

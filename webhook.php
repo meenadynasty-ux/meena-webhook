@@ -2,12 +2,13 @@
 // ==========================================
 // 👑 MEENA DYNASTY - VIP PRIVACY PROXY WALL
 // INTEGRATION: MYSQL + FIREBASE + META API
+// FINAL PERMANENT SYSTEM
 // ==========================================
 
 $verify_token    = "Meena_Biodata_Secure_Token_123";
 
-// 👇 आपका अभी का नया टोकन 👇
-$access_token    = "EAAOqLdrjEfIBSNSL8zN0lcjxSn7tn8oItGYNAqq8AvKnZAmpajUHtmCZC6J0LYZAUGt2eZCb07WZAbIKDsmFdiCRAvAUobqlmZA1sp0XM8IrK6ZCBkB9JoOa0P4kZCyNww4MSz6RPmf8hTpuaUcJdPkPsZAR5BjCAEby1Gz1253QBFC8BL7OLDEPljCf96I1EB1529QZDZD";
+// 👇 आपका नया परमानेंट (Never Expire) टोकन 👇
+$access_token    = "EAAOqLdrjEfIBSNHsGFVlwI5r36Y7lhnVDt4x79UwH3nPJQGP7Ks3q0ZCPSdGvjJ1Cp77ZByrWVu70QLzdFKvKCGnxGYkdm5ZAIBASZAZC4qhPRDmnZCYMDXW13YAj8p87Eu5bx1DBU0UHUQPrg35zQPbJFBq7GMrwEaEVGJnOP8JmpzpnmjSdZAjkG6tZAl1l6hiygZDZD";
 
 // 👇 आपके असली नंबर (+91 89056 51034) की Phone Number ID 👇
 $phone_number_id = "1194552483746801"; 

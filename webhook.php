@@ -6,11 +6,11 @@
 
 $verify_token    = "Meena_Biodata_Secure_Token_123";
 
-// 👇 आपका एकदम नया (Fresh) टोकन 👇
+// 👇 आपका सबसे नया परमानेंट टोकन 👇
 $access_token    = "EAAOqLdrjEfIBSPK2ZCm39fMsdfRprpl7RRyZCdi2UK678jTZCZCXXEDEwHrCIYNIiw01GePkJtd8XplZBEs20cCVZBmKhy1lVTt1y1NtDNZBNE3hcZB29Uyct1bqV0eAqpksDc0gpiBEf3HGX86MyiDZBrzmlCUy1jWbWA4pjTbyR1QMZC9NzaW0SnLFTmhinBnnwNOctv2XoNocRlyh6cBR4297MEedZBi1jRM9WYck9e9bCQ753ZCZAtsRFtjpCuK1zkKQCgpGh5Ydeww8XZBPnS3wOSLysQ3MPont2He9g4IydZA";
 
-// 👇 आपकी सही Phone Number ID 👇
-$phone_number_id = "1168343493037440"; 
+// 👇 आपके असली नंबर (+91 89056 51034) की Phone Number ID 👇
+$phone_number_id = "1194552483746801"; 
 
 $firebase_url    = "https://meena-marriage-default-rtdb.asia-southeast1.firebasedatabase.app";
 $firebase_secret = "KLEHB8GIs2PxUIobazUAGHsObWz2AT1Gtqjk83tV"; 

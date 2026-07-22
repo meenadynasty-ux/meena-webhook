@@ -6,10 +6,10 @@
 
 $verify_token    = "Meena_Biodata_Secure_Token_123";
 
-// 👇 आपका सबसे नया परमानेंट टोकन 👇
+// आपका परमानेंट टोकन
 $access_token    = "EAAOqLdrjEfIBSPK2ZCm39fMsdfRprpl7RRyZCdi2UK678jTZCZCXXEDEwHrCIYNIiw01GePkJtd8XplZBEs20cCVZBmKhy1lVTt1y1NtDNZBNE3hcZB29Uyct1bqV0eAqpksDc0gpiBEf3HGX86MyiDZBrzmlCUy1jWbWA4pjTbyR1QMZC9NzaW0SnLFTmhinBnnwNOctv2XoNocRlyh6cBR4297MEedZBi1jRM9WYck9e9bCQ753ZCZAtsRFtjpCuK1zkKQCgpGh5Ydeww8XZBPnS3wOSLysQ3MPont2He9g4IydZA";
 
-// 👇 आपके असली नंबर (+91 89056 51034) की Phone Number ID 👇
+// आपके असली नंबर (+91 89056 51034) की Phone Number ID
 $phone_number_id = "1194552483746801"; 
 
 $firebase_url    = "https://meena-marriage-default-rtdb.asia-southeast1.firebasedatabase.app";
@@ -142,9 +142,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     send_whatsapp_api($target, 'text', "🚫 सामने वाले यूज़र ने चैट समाप्त कर दी है।", $phone_number_id, $access_token);
                 }
             }
-            elseif (preg_match('/Profile ID:\s*([A-Za-z0-9_-]+).*?My ID:\s*([A-Za-z0-9_-]+)/is', $message_text, $matches)) {
-                $target_id = trim($matches[1]);
-                $sender_id = trim($matches[2]);
+            // 🚀 यहाँ है वह नया स्मार्ट पैटर्न 🚀
+            elseif (preg_match('/Profile ID:\s*([A-Za-z0-9_-]+)/i', $message_text, $target_matches) && preg_match('/My ID:\s*([A-Za-z0-9_-]+)/i', $message_text, $sender_matches)) {
+                
+                $target_id = trim($target_matches[1]);
+                $sender_id = trim($sender_matches[1]);
                 
                 $target_data = firebase_request($firebase_url . '/profiles_v200.json?orderBy="id"&equalTo="' . $target_id . '"', 'GET');
                 
@@ -168,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         send_whatsapp_api($sender_number, 'text', "✅ आपकी रिक्वेस्ट सफलतापूर्वक Profile ID: {$target_id} को भेज दी गई है!", $phone_number_id, $access_token);
                     }
                 } else {
-                    send_whatsapp_api($sender_number, 'text', "⚠️ यह Profile ID डेटाबेस में नहीं मिली। कृपया सही ID जाँचे।", $phone_number_id, $access_token);
+                    send_whatsapp_api($sender_number, 'text', "⚠️ यह Profile ID ( {$target_id} ) डेटाबेस में नहीं मिली। कृपया सही ID जाँचे।", $phone_number_id, $access_token);
                 }
             } 
             elseif (strtolower($message_text) === 'hi' || strtolower($message_text) === 'hello') {

@@ -1,7 +1,7 @@
 <?php
 // ==========================================
 // 👑 MEENA DYNASTY - VIP PRIVACY PROXY WALL
-// FIXED API VERSION + DEBUG LOGGER
+// FIXED API VERSION + DEBUG LOGGER + NO ADMIN LOOP
 // ==========================================
 
 $db_host = "sql211.infinityfree.com";
@@ -38,8 +38,8 @@ if (isset($_REQUEST['sender_phone']) && isset($_REQUEST['receiver_phone'])) {
 
 $verify_token    = "Meena_Biodata_Secure_Token_123";
 
-// आपका लेटेस्ट टोकन
-$access_token    = "EAAOqLdrjEfIBSGAnIzvpPD9P3dJAy5ER8lnkldVIeeAveYQxZAIUflNYWHtAVFwa4tgQ8HJkVOWWdmZB4YGZA35QSvNY6KD7Xx5RPQm00tLEBVU96kN7ezFPFBPQLWGamkO2QWXAm191ACoVSXyBW40HGlHRzvWTEMRupafhBTIbPqLVgOhmrGvnZC4F08zTU6DE1Q7rLvyvUnSCpOUPIs6bEwq8FxLlLRrJrpxfEFx6DeB2XE3Ybh6MNuS7nrtMhGmDZCEX5bXvZA7KoKI0giEvvT6P7OdpqGfQIkwgZDZD"; 
+// 👇 आपका बिलकुल नया टोकन 👇
+$access_token    = "EAAOqLdrjEfIBSOb5zMsAwsR2ll4h2HI8OkZAQYrFc6qCSKPt7gwFmA6VksZB85hw9Ylu57YVRhPJZCVmBtmKNTZAfvi97PtG6gv8V7aiIPy6O6ZBtoRdzcOtRMtOeHpCxSST3sAa2wU3h5BTZBM37sFxjPCwsvgsZAuH92fsZC8gpeP2qseexMhZC0LSxSSiXT0NXlJ1ZBkqburrkscoGtWFi4TMehrEEBg3zrgu6NdsBZBankpFNytygGrXut1xg8U0bQ5n1b6ItCZBshO7rCNAYq4J4uX07yubJZBbJlhDp6dsZD"; 
 
 $firebase_url    = "https://meena-marriage-default-rtdb.asia-southeast1.firebasedatabase.app";
 $firebase_secret = "KLEHB8GIs2PxUIobazUAGHsObWz2AT1Gtqjk83tV"; 
@@ -62,7 +62,7 @@ function firebase_request($url, $method = 'GET', $data = null) {
 }
 
 function send_whatsapp_api($to, $type, $content, $phone_id, $token) {
-    // 🚀 यहाँ API वर्ज़न v25.0 कर दिया है 🚀
+    // 🚀 API वर्ज़न v25.0 🚀
     $url = 'https://graph.facebook.com/v25.0/' . $phone_id . '/messages';
     
     $data = [

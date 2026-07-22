@@ -14,15 +14,17 @@ $db_pass = "Rishi7665";
 $db_name = "if0_40880172_dynasty_bot";
 
 $conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
-// हम यहाँ die() का इस्तेमाल नहीं करेंगे क्योंकि यह वेबहुक है, अगर DB फेल भी हो तो Meta को 200 OK जाना चाहिए
 if ($conn->connect_error) {
-    // साइलेंट एरर
+    // अगर Termux से रिक्वेस्ट है तो एरर दें, वरना वेबहुक के लिए साइलेंट रहें
+    if (isset($_REQUEST['sender_phone'])) {
+        die(json_encode(["status" => "error", "message" => "DB Connection Failed"]));
+    }
 } else {
     $conn->set_charset("utf8mb4");
 }
 
 // ------------------------------------------
-// 2. WEBSITE SIGNAL (Prepared Statements के साथ)
+// 2. TERMUX / WEBSITE SIGNAL (Prepared Statements)
 // ------------------------------------------
 if (isset($_REQUEST['sender_phone']) && isset($_REQUEST['receiver_phone'])) {
     header('Content-Type: application/json');
@@ -43,22 +45,20 @@ if (isset($_REQUEST['sender_phone']) && isset($_REQUEST['receiver_phone'])) {
         } else {
             echo json_encode(["status" => "error", "message" => "Query Prepare Error"]);
         }
-    } else {
-        echo json_encode(["status" => "error", "message" => "DB Connection Failed"]);
     }
     exit;
 }
 
 // ------------------------------------------
-// 3. META API & FIREBASE CONFIGURATION (YOUR CREDENTIALS)
+// 3. META API & FIREBASE CONFIGURATION
 // ------------------------------------------
 $verify_token    = "Meena_Biodata_Secure_Token_123";
 
 // 👇 आपका बिल्कुल नया परमानेंट टोकन 👇
-$access_token    = "EAAOqLdrjEfIBSC5vFWmvl837teCmryDxhiQZAhQK2PZAcJTjOMNMra8UtNHVfdv9H6FrPZBmuut8mFe5pUFQ36tuujpCkqv6nDPJpPf7tYodX0ZCcL0M6yZAFGyRZCsk0T7tyhztoZAVeb48adgTjvGZBH4kruDpXxA9csQWr298SRaJMyUx66Kl2UsxUNoLdyf5YQZDZD";
+$access_token    = "EAAOqLdrjEfIBSC5vFWmvl837teCmryDxhiQZAhQK2PZAcJTjOMNMra8UtNHVfdv9H6FrPZBmuut8mFe5pUFQ36tuujpCkqv6nDPJpPf7tYodX0ZCcL0M6yZAFGyRZCsk0T7tyhztoZAVeb48adgTjvGZBH4kruDpXxA9csQWr298SRaJMyUx66Kl2UsxUNoLdyf5YQZDZD"; 
 
-// 👇 आपके असली नंबर (+91 89056 51034) की Phone Number ID 👇
-$phone_number_id = "1194552483746801"; // इसे मैंने पिछले वर्किंग कोड से लिया है (118171... वाला पुराना हो सकता है)
+// 👇 100% सही Phone Number ID (आपके स्क्रीनशॉट से) 👇
+$phone_number_id = "1168343493037440"; 
 
 $firebase_url    = "https://meena-marriage-default-rtdb.asia-southeast1.firebasedatabase.app";
 $firebase_secret = "KLEHB8GIs2PxUIobazUAGHsObWz2AT1Gtqjk83tV"; 
@@ -74,9 +74,7 @@ function get_secure_url($url) {
 function firebase_request($url, $method = 'GET', $data = null) {
     $ch = curl_init(get_secure_url($url));
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-    if ($data !== null) {
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    }
+    if ($data !== null) { curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)); }
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10); 
@@ -159,9 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $my_admin_number = "918905651034"; // एडमिन लूप से बचने के लिए
 
         if ($sender_number === $my_admin_number) {
-             http_response_code(200);
-             echo "OK";
-             exit;
+             http_response_code(200); echo "OK"; exit;
         }
         
         // ==========================================
@@ -176,6 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $target = $session_info['target'];
                 
                 if ($button_id === 'btn_accept') {
+                    global $conn;
                     if($conn) {
                         $stmt = $conn->prepare("INSERT INTO connection_requests (sender_phone, receiver_phone, status) VALUES (?, ?, 'pending')");
                         if($stmt){

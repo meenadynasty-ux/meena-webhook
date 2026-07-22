@@ -1,26 +1,26 @@
 <?php
 // ==========================================
 // 👑 MEENA DYNASTY - VIP PRIVACY PROXY WALL
-// INTEGRATION: MYSQL (TERMUX) + FIREBASE + META API
-// SYSTEM: ENTERPRISE LEVEL ARCHITECTURE + MULTI-FOLDER SEARCH
+// INTEGRATION: MYSQL + FIREBASE + META API
+// FINAL PERMANENT SYSTEM MULTI-FOLDER
 // ==========================================
 
 // ------------------------------------------
-// 1. DATABASE CONNECTION (HIGH SECURITY)
+// 1. DATABASE CONNECTION
 // ------------------------------------------
 $db_host = "sql211.infinityfree.com";
 $db_user = "if0_40880172";
 $db_pass = "Rishi7665";
 $db_name = "if0_40880172_dynasty_bot";
 
-$conn = new mysqli($db_host, $db_user, $db_pass, $db_name);
+$conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
 if ($conn->connect_error) {
     die(json_encode(["status" => "error", "message" => "DB Connection Failed"]));
 }
 $conn->set_charset("utf8mb4");
 
 // ------------------------------------------
-// 2. WEBSITE SIGNAL (Prepared Statements के साथ)
+// 2. WEBSITE PING SIGNAL (Image Ping)
 // ------------------------------------------
 if (isset($_REQUEST['sender_phone']) && isset($_REQUEST['receiver_phone'])) {
     header('Content-Type: application/json');
@@ -28,36 +28,35 @@ if (isset($_REQUEST['sender_phone']) && isset($_REQUEST['receiver_phone'])) {
     $receiver_phone = $_REQUEST['receiver_phone'];
     $sender_id = isset($_REQUEST['sender_id']) ? $_REQUEST['sender_id'] : 'NONE';
 
-    // SQL Injection से बचने के लिए Prepared Statement का उपयोग (Premium Security)
     $stmt = $conn->prepare("INSERT INTO connection_requests (sender_phone, receiver_phone, status, sender_id) VALUES (?, ?, 'pending', ?)");
     $stmt->bind_param("sss", $sender_phone, $receiver_phone, $sender_id);
     
     if ($stmt->execute()) {
-        echo json_encode(["status" => "success", "message" => "Request stored securely for Termux Bot"]);
+        echo json_encode(["status" => "success", "message" => "Ping Stored"]);
     } else {
-        echo json_encode(["status" => "error", "message" => "Database Error"]);
+        echo json_encode(["status" => "error", "message" => "DB Error"]);
     }
     $stmt->close();
     exit;
 }
 
 // ------------------------------------------
-// 3. META API & FIREBASE CONFIGURATION (YOUR CREDENTIALS)
+// 3. META API & FIREBASE CREDENTIALS
 // ------------------------------------------
 $verify_token    = "Meena_Biodata_Secure_Token_123";
+
+// 👇 आपका परमानेंट (Never Expire) टोकन 👇
 $access_token    = "EAAOqLdrjEfIBSNHsGFVlwI5r36Y7lhnVDt4x79UwH3nPJQGP7Ks3q0ZCPSdGvjJ1Cp77ZByrWVu70QLzdFKvKCGnxGYkdm5ZAIBASZAZC4qhPRDmnZCYMDXW13YAj8p87Eu5bx1DBU0UHUQPrg35zQPbJFBq7GMrwEaEVGJnOP8JmpzpnmjSdZAjkG6tZAl1l6hiygZDZD";
+
+// 👇 आपके नंबर की Phone Number ID 👇
 $phone_number_id = "1194552483746801"; 
 
 $firebase_url    = "https://meena-marriage-default-rtdb.asia-southeast1.firebasedatabase.app";
 $firebase_secret = "KLEHB8GIs2PxUIobazUAGHsObWz2AT1Gtqjk83tV"; 
 
 // ------------------------------------------
-// 4. ADVANCED HELPER FUNCTIONS
+// 4. ADVANCED HELPERS & MULTI-FOLDER SEARCH
 // ------------------------------------------
-function log_debug($msg) {
-    file_put_contents('whatsapp_log.txt', date('Y-m-d H:i:s') . " - " . $msg . "\n", FILE_APPEND);
-}
-
 function get_secure_url($url) {
     global $firebase_secret;
     return $url . (strpos($url, '?') !== false ? '&' : '?') . 'auth=' . $firebase_secret;
@@ -66,25 +65,32 @@ function get_secure_url($url) {
 function firebase_request($url, $method = 'GET', $data = null) {
     $ch = curl_init(get_secure_url($url));
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-    if ($data !== null) {
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    }
+    if ($data !== null) { curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)); }
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10); // 10 Sec Timeout to prevent server crash
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10); 
     $res = curl_exec($ch);
     curl_close($ch);
     return json_decode($res, true);
 }
 
+// 🚀 सभी फोल्डर्स में प्रोफाइल ढूंढने का लॉजिक 🚀
+function findProfileInAllFolders($target_id) {
+    global $firebase_url;
+    $folders = ['profiles_v200', 'profiles_v300', 'profiles_v10_final', 'profiles_v100', 'profiles'];
+    
+    foreach ($folders as $folder) {
+        $data = firebase_request($firebase_url . '/' . $folder . '.json?orderBy="id"&equalTo="' . $target_id . '"', 'GET');
+        if (!empty($data) && !isset($data['error'])) {
+            return $data[array_key_first($data)]; 
+        }
+    }
+    return null; 
+}
+
 function send_whatsapp_api($to, $type, $content, $phone_id, $token) {
     $url = 'https://graph.facebook.com/v19.0/' . $phone_id . '/messages';
-    
-    $data = [
-        'messaging_product' => 'whatsapp',
-        'to' => $to,
-        'type' => $type
-    ];
+    $data = ['messaging_product' => 'whatsapp', 'to' => $to, 'type' => $type];
 
     if ($type === 'text') {
         $data['text'] = ['body' => $content];
@@ -108,32 +114,12 @@ function send_whatsapp_api($to, $type, $content, $phone_id, $token) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    $res = curl_exec($ch);
-    
-    if (curl_getinfo($ch, CURLINFO_HTTP_CODE) !== 200) {
-         error_log("Meta API Error: " . $res);
-    }
-    
+    curl_exec($ch);
     curl_close($ch);
 }
 
-// 🚀 MULTI-FOLDER SEARCH FUNCTION 🚀
-function findProfileInAllFolders($target_id) {
-    global $firebase_url;
-    // आपकी वेबसाइट वाले सभी फोल्डर्स के नाम
-    $folders = ['profiles_v200', 'profiles_v300', 'profiles_v10_final', 'profiles_v100', 'profiles'];
-    
-    foreach ($folders as $folder) {
-        $data = firebase_request($firebase_url . '/' . $folder . '.json?orderBy="id"&equalTo="' . $target_id . '"', 'GET');
-        if (!empty($data) && !isset($data['error'])) {
-            return $data[array_key_first($data)]; // प्रोफाइल मिल गई!
-        }
-    }
-    return null; // किसी भी फोल्डर में नहीं मिली
-}
-
 // ------------------------------------------
-// 5. WEBHOOK VERIFICATION (GET)
+// 5. WEBHOOK VERIFICATION
 // ------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['hub_mode'])) {
     if ($_GET['hub_mode'] === 'subscribe' && $_GET['hub_verify_token'] === $verify_token) {
@@ -144,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['hub_mode'])) {
 }
 
 // ------------------------------------------
-// 6. MESSAGE RECEIVING & ROUTING (POST)
+// 6. MESSAGE RECEIVING & ROUTING
 // ------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = file_get_contents('php://input');
@@ -154,21 +140,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $msg_obj = $data['entry'][0]['changes'][0]['value']['messages'][0];
         
         $sender_number = $msg_obj['from'];
-        $my_admin_number = "918905651034"; // आपका रजिस्टर्ड WhatsApp नंबर
+        $my_admin_number = "918905651034"; // एडमिन का नंबर लूप रोकने के लिए
 
-        // एडमिन लूप रोकें
         if ($sender_number === $my_admin_number) {
-             http_response_code(200);
-             echo "OK";
-             exit;
+             http_response_code(200); echo "OK"; exit;
         }
         
-        // ==========================================
-        // BUTTON CLICKS (Interactive Reply)
-        // ==========================================
+        // --- BUTTON CLICKS ---
         if ($msg_obj['type'] === 'interactive') {
             $button_id = $msg_obj['interactive']['button_reply']['id'];
-            
             $session_info = firebase_request($firebase_url . '/whatsapp_sessions/' . $sender_number . '.json', 'GET');
             
             if (!empty($session_info) && isset($session_info['target'])) {
@@ -185,20 +165,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     send_whatsapp_api($sender_number, 'text', "❌ आपने इस चैट को मना कर दिया है।", $phone_number_id, $access_token);
                     send_whatsapp_api($target, 'text', "माफ़ करें, सामने वाले यूज़र अभी बात करने के लिए उपलब्ध नहीं हैं।", $phone_number_id, $access_token);
-                    // डिलीट सेशन
+                    
                     firebase_request($firebase_url . '/whatsapp_sessions/' . $sender_number . '.json', 'DELETE');
                     firebase_request($firebase_url . '/whatsapp_sessions/' . $target . '.json', 'DELETE');
                 }
             }
         }
-        
-        // ==========================================
-        // NORMAL TEXT MESSAGES
-        // ==========================================
+        // --- TEXT MESSAGES ---
         elseif ($msg_obj['type'] === 'text') {
             $message_text = trim($msg_obj['text']['body']); 
 
-            // --- PREMIUM FEATURE: STOP COMMAND TO END CHAT ---
             if (strtoupper($message_text) === 'STOP' || $message_text === 'स्टॉप') {
                 $session_info = firebase_request($firebase_url . '/whatsapp_sessions/' . $sender_number . '.json', 'GET');
                 if (!empty($session_info) && isset($session_info['target'])) {
@@ -206,16 +182,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     firebase_request($firebase_url . '/whatsapp_sessions/' . $sender_number . '.json', 'DELETE');
                     firebase_request($firebase_url . '/whatsapp_sessions/' . $target . '.json', 'DELETE');
                     
-                    send_whatsapp_api($sender_number, 'text', "🚫 आपकी चैट सुरक्षित रूप से समाप्त कर दी गई है। अब आपके मैसेज आगे नहीं भेजे जाएंगे।", $phone_number_id, $access_token);
-                    send_whatsapp_api($target, 'text', "🚫 सामने वाले यूज़र ने चैट समाप्त कर दी है। यह कनेक्शन अब बंद हो चुका है।", $phone_number_id, $access_token);
+                    send_whatsapp_api($sender_number, 'text', "🚫 आपकी चैट सुरक्षित रूप से समाप्त कर दी गई है।", $phone_number_id, $access_token);
+                    send_whatsapp_api($target, 'text', "🚫 सामने वाले यूज़र ने चैट समाप्त कर दी है।", $phone_number_id, $access_token);
                 }
             }
-            // --- NEW CONNECTION REGEX MATCH (ID nikaalne ke liye) ---
+            // 🚀 SMART REGEX: ID निकालने का सबसे शक्तिशाली तरीका 🚀
             elseif (preg_match('/id=([A-Za-z0-9_-]+)/i', $message_text, $matches) || preg_match('/Profile ID:\s*([A-Za-z0-9_-]+)/i', $message_text, $matches)) {
                 
                 $target_id = trim($matches[1]);
                 
-                // 🚀 NAYA LOGIC: Sabhi Folders mein check karega 🚀
+                // 🚀 नया फंक्शन: यह सभी 5 फोल्डर में ढूंढेगा 🚀
                 $t_profile = findProfileInAllFolders($target_id);
                 
                 if ($t_profile !== null) {
@@ -231,21 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ];
                         firebase_request($firebase_url . '/whatsapp_sessions.json', 'PATCH', $session_data);
 
-                        $t_name = $t_profile['name'] ?? '-';
-                        $t_dob = $t_profile['dob'] ?? '-';
-                        $t_age = $t_profile['ageCalc'] ?? $t_profile['age'] ?? '-';
-                        $t_height = $t_profile['height'] ?? '-';
-                        $t_job = $t_profile['jobType'] ?? '-';
-                        if (!empty($t_profile['desig'])) $t_job .= ' (' . $t_profile['desig'] . ')';
-                        
-                        $t_gotras = array_filter([$t_profile['g1']??'', $t_profile['g2']??'', $t_profile['g3']??'', $t_profile['g4']??'']);
-                        $t_gotra_str = !empty($t_gotras) ? implode(" / ", $t_gotras) : '-';
-                        $t_city = $t_profile['city'] ?? '-';
-                        $t_native = $t_profile['native'] ?? '-';
-
-                        $vip_message = "༺👑═༻༺═👑༻\n💛👑 *MEENA DYNASTY* 👑💛\n✨ Meena Rishton Ka Sangam ✨🤝\n༺══════👑══════༻\n\n";
-                        $vip_message .= "नमस्कार 🙏\nकिसी ने आपकी प्रोफाइल में रूचि दिखाई है:\n\n";
-                        $vip_message .= "आपकी प्रोफाइल लिंक: https://meenabiodata.infinityfree.me/InT.html?id={$target_id}\n\n";
+                        $vip_message = "💛👑 *MEENA DYNASTY* 👑💛\nनमस्कार 🙏\nकिसी ने आपकी प्रोफाइल में रूचि दिखाई है।\n\nआपकी प्रोफाइल लिंक: https://meenabiodata.infinityfree.me/InT.html?id={$target_id}";
                         
                         send_whatsapp_api($target_number, 'interactive', $vip_message, $phone_number_id, $access_token);
                         send_whatsapp_api($sender_number, 'text', "✅ आपकी रिक्वेस्ट सफलतापूर्वक Profile ID: {$target_id} को भेज दी गई है!", $phone_number_id, $access_token);
@@ -259,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             elseif (strtolower($message_text) === 'hi' || strtolower($message_text) === 'hello') {
                 send_whatsapp_api($sender_number, 'text', "नमस्ते! 🙏 Meena Dynasty Bot सक्रिय है।", $phone_number_id, $access_token);
             }
-            // --- RELAY MESSAGE (Proxy Wall) ---
+            // --- RELAY MESSAGE ---
             else {
                 $session_info = firebase_request($firebase_url . '/whatsapp_sessions/' . $sender_number . '.json', 'GET');
                 if (!empty($session_info) && isset($session_info['target'])) {

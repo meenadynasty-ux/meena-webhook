@@ -1,7 +1,7 @@
 <?php
 // ==========================================
 // 👑 MEENA DYNASTY - VIP PRIVACY PROXY WALL
-// WITH ERROR LOGGING (CCTV CAMERA)
+// FIXED API VERSION + DEBUG LOGGER
 // ==========================================
 
 $db_host = "sql211.infinityfree.com";
@@ -62,7 +62,8 @@ function firebase_request($url, $method = 'GET', $data = null) {
 }
 
 function send_whatsapp_api($to, $type, $content, $phone_id, $token) {
-    $url = 'https://graph.facebook.com/v20.0/' . $phone_id . '/messages';
+    // 🚀 यहाँ API वर्ज़न v25.0 कर दिया है 🚀
+    $url = 'https://graph.facebook.com/v25.0/' . $phone_id . '/messages';
     
     $data = [
         'messaging_product' => 'whatsapp',
@@ -96,12 +97,9 @@ function send_whatsapp_api($to, $type, $content, $phone_id, $token) {
     $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    // 🔴 यह लाइनें Facebook का एरर सीधे Render में दिखाएंगी 🔴
-    error_log("=== WHATSAPP SEND ATTEMPT ===");
-    error_log("TO: " . $to . " | PHONE_ID: " . $phone_id);
-    error_log("META RESPONSE CODE: " . $httpcode);
-    error_log("META RESPONSE BODY: " . $response);
-    error_log("=============================");
+    // 🔴 यह फाइल बताएगी कि असली गड़बड़ क्या है 🔴
+    $log_data = "[" . date('Y-m-d H:i:s') . "] TO: $to | ID: $phone_id | CODE: $httpcode | RESP: $response\n";
+    file_put_contents('debug.txt', $log_data, FILE_APPEND);
 }
 
 function findProfileInAllFolders($target_id) {
@@ -137,17 +135,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $msg_obj = $data['entry'][0]['changes'][0]['value']['messages'][0];
         $sender_number = $msg_obj['from'];
-        $my_admin_number = "918905651034"; 
-
-        if ($sender_number === $my_admin_number) {
-             http_response_code(200); echo "OK"; exit;
-        }
         
         if ($msg_obj['type'] === 'text') {
             $message_text = trim($msg_obj['text']['body']); 
 
             if (strtolower($message_text) === 'hi' || strtolower($message_text) === 'hello' || strtolower($message_text) === 'hiii' || strtolower($message_text) === 'hii') {
-                error_log("=> HI COMMAND TRIGGERED BY: " . $sender_number);
                 send_whatsapp_api($sender_number, 'text', "नमस्ते! 🙏 Meena Dynasty Bot सक्रिय है।", $current_phone_id, $access_token);
             }
             elseif (preg_match('/id=([A-Za-z0-9_-]+)/i', $message_text, $matches) || preg_match('/Profile ID:\s*([A-Za-z0-9_-]+)/i', $message_text, $matches)) {

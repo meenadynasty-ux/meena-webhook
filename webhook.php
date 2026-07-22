@@ -1,7 +1,7 @@
 <?php
 // ==========================================
 // 👑 MEENA DYNASTY - VIP PRIVACY PROXY WALL
-// FIXED API VERSION + DEBUG LOGGER + NO ADMIN LOOP
+// FIXED ERROR LOGGING (DIRECT TO RENDER CONSOLE)
 // ==========================================
 
 $db_host = "sql211.infinityfree.com";
@@ -62,8 +62,7 @@ function firebase_request($url, $method = 'GET', $data = null) {
 }
 
 function send_whatsapp_api($to, $type, $content, $phone_id, $token) {
-    // 🚀 API वर्ज़न v25.0 🚀
-    $url = 'https://graph.facebook.com/v25.0/' . $phone_id . '/messages';
+    $url = 'https://graph.facebook.com/v20.0/' . $phone_id . '/messages';
     
     $data = [
         'messaging_product' => 'whatsapp',
@@ -97,9 +96,8 @@ function send_whatsapp_api($to, $type, $content, $phone_id, $token) {
     $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
-    // 🔴 यह फाइल बताएगी कि असली गड़बड़ क्या है 🔴
-    $log_data = "[" . date('Y-m-d H:i:s') . "] TO: $to | ID: $phone_id | CODE: $httpcode | RESP: $response\n";
-    file_put_contents('debug.txt', $log_data, FILE_APPEND);
+    // 🔴 यह लाइन सीधा Render की काली स्क्रीन पर Facebook का एरर छाप देगी 🔴
+    error_log("🔴 META_DEBUG - HTTP_CODE: $httpcode | RESPONSE: $response");
 }
 
 function findProfileInAllFolders($target_id) {

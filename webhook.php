@@ -15,7 +15,6 @@ $db_name = "if0_40880172_dynasty_bot";
 
 $conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
 if ($conn->connect_error) {
-    // अगर Termux से रिक्वेस्ट है तो एरर दें, वरना वेबहुक के लिए साइलेंट रहें
     if (isset($_REQUEST['sender_phone'])) {
         die(json_encode(["status" => "error", "message" => "DB Connection Failed"]));
     }
@@ -54,11 +53,11 @@ if (isset($_REQUEST['sender_phone']) && isset($_REQUEST['receiver_phone'])) {
 // ------------------------------------------
 $verify_token    = "Meena_Biodata_Secure_Token_123";
 
-// 👇 आपका बिल्कुल नया परमानेंट टोकन 👇
-$access_token    = "EAAOqLdrjEfIBSKAuc3Mv2ipCBJctwWfXkILIB3RlzNmyopkU8bbAXcm6DcuZCZBqoZBZBYg4vSMs1yf32XjNVGmmZCUVE1gCUwLURTzvPsVcZB7AY61V83RZBCSU8BEttGM48yBhOuxttaA6deFPUYfs2tAQrr7H0ottemZAoU5FVDA1yR8SIeZAF1rWpCsvYZBc0I8gZDZD"; 
+// 👇 आपका बिल्कुल नया टोकन 👇
+$access_token    = "EAAOqLdrjEfIBSNGbftHGr3Y2booXZC8QI5VZCOBYrZBRlZAs3JRLDYmH2v7jw9n0ZBWbK2Ri2Xl8tYVV55IgZBzDXUfE8UG2EfFHZB6JE0VwtiF0m8iBBOkTSCX3Q8nLmurctEi1mQt7FWGnV14JvQNiSzj2GYDUAZB3GJIP2o58CKE62VPhqyHlXWZCwNLvIwkgHIgZDZD"; 
 
-// 👇 100% सही Phone Number ID (आपके स्क्रीनशॉट से) 👇
-$phone_number_id = "1168343493037440"; 
+// 👇 असली नंबर (+91 8...) की Phone Number ID 👇
+$phone_number_id = "1181713018363171"; 
 
 $firebase_url    = "https://meena-marriage-default-rtdb.asia-southeast1.firebasedatabase.app";
 $firebase_secret = "KLEHB8GIs2PxUIobazUAGHsObWz2AT1Gtqjk83tV"; 
@@ -220,13 +219,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             elseif (preg_match('/id=([A-Za-z0-9_-]+)/i', $message_text, $matches) || preg_match('/Profile ID:\s*([A-Za-z0-9_-]+)/i', $message_text, $matches)) {
                 $target_id = trim($matches[1]);
                 
-                // My ID निकालने का प्रयास, अगर हो तो
                 $sender_id = 'NONE';
                 if (preg_match('/My ID:\s*([A-Za-z0-9_-]+)/i', $message_text, $myIdMatches)) {
                     $sender_id = trim($myIdMatches[1]);
                 }
                 
-                // 🚀 मल्टी-फोल्डर सर्च का उपयोग 🚀
                 $t_profile = findProfileInAllFolders($target_id);
                 
                 if ($t_profile !== null) {
@@ -242,7 +239,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ];
                         firebase_request($firebase_url . '/whatsapp_sessions.json', 'PATCH', $session_data);
 
-                        // सामने वाले (Target) को भेजने वाला मैसेज
                         $t_name = $t_profile['name'] ?? '-';
                         $t_dob = $t_profile['dob'] ?? '-';
                         $t_age = $t_profile['ageCalc'] ?? $t_profile['age'] ?? '-';
@@ -262,7 +258,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $vip_message .= "*MEENA DYNASTY* पर देखी है।\n\n";
                         $vip_message .= "मेरा बायोडाटा ये है:\n\n";
 
-                        // अगर भेजने वाले की ID है तो उसकी डिटेल भी दें
                         if ($sender_id !== 'NONE') {
                             $s_profile = findProfileInAllFolders($sender_id);
                             if ($s_profile !== null) {
@@ -285,7 +280,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         send_whatsapp_api($target_number, 'interactive', $vip_message, $phone_number_id, $access_token);
                         
-                        // भेजने वाले को कन्फर्मेशन
                         send_whatsapp_api($sender_number, 'text', "✅ आपकी रिक्वेस्ट सफलतापूर्वक Profile ID: {$target_id} को भेज दी गई है!", $phone_number_id, $access_token);
                     } else {
                         send_whatsapp_api($sender_number, 'text', "⚠️ प्रोफाइल मिल गई, लेकिन इस प्रोफाइल में कोई मोबाइल नंबर सेव नहीं है।", $phone_number_id, $access_token);

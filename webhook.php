@@ -6,8 +6,8 @@
 
 $verify_token    = "Meena_Biodata_Secure_Token_123";
 
-// 👇 आपका सबसे नया परमानेंट टोकन 👇
-$access_token    = "EAAOqLdrjEfIBSPK2ZCm39fMsdfRprpl7RRyZCdi2UK678jTZCZCXXEDEwHrCIYNIiw01GePkJtd8XplZBEs20cCVZBmKhy1lVTt1y1NtDNZBNE3hcZB29Uyct1bqV0eAqpksDc0gpiBEf3HGX86MyiDZBrzmlCUy1jWbWA4pjTbyR1QMZC9NzaW0SnLFTmhinBnnwNOctv2XoNocRlyh6cBR4297MEedZBi1jRM9WYck9e9bCQ753ZCZAtsRFtjpCuK1zkKQCgpGh5Ydeww8XZBPnS3wOSLysQ3MPont2He9g4IydZA";
+// 👇 आपका अभी का नया टोकन 👇
+$access_token    = "EAAOqLdrjEfIBSNSL8zN0lcjxSn7tn8oItGYNAqq8AvKnZAmpajUHtmCZC6J0LYZAUGt2eZCb07WZAbIKDsmFdiCRAvAUobqlmZA1sp0XM8IrK6ZCBkB9JoOa0P4kZCyNww4MSz6RPmf8hTpuaUcJdPkPsZAR5BjCAEby1Gz1253QBFC8BL7OLDEPljCf96I1EB1529QZDZD";
 
 // 👇 आपके असली नंबर (+91 89056 51034) की Phone Number ID 👇
 $phone_number_id = "1194552483746801"; 
@@ -87,7 +87,13 @@ function send_whatsapp_api($to, $type, $content, $phone_id, $token) {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-    curl_exec($ch);
+    $res = curl_exec($ch);
+    
+    // 👇 अगर कोई एरर आए तो उसे Render Logs में देखने के लिए (Debugging) 👇
+    if (curl_getinfo($ch, CURLINFO_HTTP_CODE) !== 200) {
+         error_log("Meta API Error: " . $res);
+    }
+    
     curl_close($ch);
 }
 
@@ -101,8 +107,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($data['entry'][0]['changes'][0]['value']['messages'][0])) {
         $msg_obj = $data['entry'][0]['changes'][0]['value']['messages'][0];
         
+        $sender_number = $msg_obj['from'];
+        $my_admin_number = "918905651034"; // आपका रजिस्टर्ड WhatsApp नंबर
+
+        // एडमिन लूप रोकें
+        if ($sender_number === $my_admin_number) {
+             http_response_code(200);
+             echo "OK";
+             exit;
+        }
+        
         if ($msg_obj['type'] === 'interactive') {
-            $sender_number = $msg_obj['from'];
             $button_id = $msg_obj['interactive']['button_reply']['id'];
             
             $session_info = firebase_request($firebase_url . '/whatsapp_sessions/' . $sender_number . '.json', 'GET');
@@ -129,7 +144,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         elseif ($msg_obj['type'] === 'text') {
-            $sender_number = $msg_obj['from'];
             $message_text = trim($msg_obj['text']['body']); 
 
             if (strtoupper($message_text) === 'STOP' || $message_text === 'स्टॉप') {
@@ -142,8 +156,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     send_whatsapp_api($target, 'text', "🚫 सामने वाले यूज़र ने चैट समाप्त कर दी है।", $phone_number_id, $access_token);
                 }
             }
-            // 👇 यह है बदलाव: अब यह सीधे आपकी लिंक में से id=... निकाल लेगा 👇
-            elseif (preg_match('/id=([A-Za-z0-9_-]+)/i', $message_text, $matches)) {
+            // ID निकालने वाला लॉजिक
+            elseif (preg_match('/id=([A-Za-z0-9_-]+)/i', $message_text, $matches) || preg_match('/Profile ID:\s*([A-Za-z0-9_-]+)/i', $message_text, $matches)) {
+                
                 $target_id = trim($matches[1]);
                 
                 $target_data = firebase_request($firebase_url . '/profiles_v200.json?orderBy="id"&equalTo="' . $target_id . '"', 'GET');
@@ -168,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         send_whatsapp_api($sender_number, 'text', "✅ आपकी रिक्वेस्ट सफलतापूर्वक Profile ID: {$target_id} को भेज दी गई है!", $phone_number_id, $access_token);
                     }
                 } else {
-                    send_whatsapp_api($sender_number, 'text', "⚠️ यह Profile ID डेटाबेस में नहीं मिली। कृपया सही ID जाँचे।", $phone_number_id, $access_token);
+                    send_whatsapp_api($sender_number, 'text', "⚠️ यह Profile ID ({$target_id}) डेटाबेस में नहीं मिली। कृपया सही ID जाँचे।", $phone_number_id, $access_token);
                 }
             } 
             elseif (strtolower($message_text) === 'hi' || strtolower($message_text) === 'hello') {

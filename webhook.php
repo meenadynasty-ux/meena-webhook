@@ -5,12 +5,8 @@
 // ==========================================
 
 $verify_token    = "Meena_Biodata_Secure_Token_123";
-
-// 👇 1. यहाँ अपना नया Access Token पेस्ट करें (जो EAAO... से शुरू होता है) 👇
-$access_token    = "यहाँ_अपना_नया_टोकन_पेस्ट_करें";
-
-// 👇 2. यहाँ अपने +91 नंबर वाली नई Phone Number ID पेस्ट करें 👇
-$phone_number_id = "यहाँ_नई_PHONE_NUMBER_ID_पेस्ट_करें"; 
+$access_token    = "EAAOqLdrjEfIBSFwUcRuOnRBQGI4hfb3wT1vEPjt9ZCJeAnOesDYQnAlZAjas7e1mHxYIKDZCbQUzGN49MW0Df0AJ1HJnqMR3HLkJeXcCZAOnLlYIKX9maM2RAixnAczwqYZCZCKfIvFfRFOzgUcbhuKuhP8WmttZCZCOmuFVLdm9gJPuawVg6oFOnkHHhnleyZAqiEQZDZD";
+$phone_number_id = "1168343493037440"; 
 
 $firebase_url    = "https://meena-marriage-default-rtdb.asia-southeast1.firebasedatabase.app";
 $firebase_secret = "KLEHB8GIs2PxUIobazUAGHsObWz2AT1Gtqjk83tV"; 
@@ -164,17 +160,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         $vip_message = "💛👑 *MEENA DYNASTY* 👑💛\nनमस्कार 🙏\nकिसी ने आपकी प्रोफाइल में रूचि दिखाई है।\n\nआपकी प्रोफाइल लिंक: https://meenabiodata.infinityfree.me/?id={$target_id}";
                         
-                        // Target को मैसेज
                         send_whatsapp_api($target_number, 'interactive', $vip_message, $phone_number_id, $access_token);
-                        
-                        // Sender को Confirmation
                         send_whatsapp_api($sender_number, 'text', "✅ आपकी रिक्वेस्ट सफलतापूर्वक Profile ID: {$target_id} को भेज दी गई है!", $phone_number_id, $access_token);
                     }
                 } else {
                     send_whatsapp_api($sender_number, 'text', "⚠️ यह Profile ID डेटाबेस में नहीं मिली। कृपया सही ID जाँचे।", $phone_number_id, $access_token);
                 }
             } 
-            // --- Hi / Hello रिप्लाई ---
             elseif (strtolower($message_text) === 'hi' || strtolower($message_text) === 'hello') {
                 send_whatsapp_api($sender_number, 'text', "नमस्ते! 🙏 Meena Dynasty Bot सक्रिय है। किसी से जुड़ने के लिए कृपया इस फॉर्मेट में मैसेज भेजें:\n\nProfile ID: [सामने वाले की ID]\nMy ID: [आपकी ID]", $phone_number_id, $access_token);
             }

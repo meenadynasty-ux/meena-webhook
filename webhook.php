@@ -1,7 +1,7 @@
 <?php
 // ==========================================
 // 👑 MEENA DYNASTY - ADVANCED VIP PROXY WALL
-// BASED ON STABLE SPY CODE + ALL VIP FEATURES
+// BASED ON STABLE SPY CODE + MASTER INDEX FAST SEARCH
 // ==========================================
 
 // 1. PHP के सारे छुपे हुए एरर स्क्रीन पर दिखाने के लिए (Spy Camera ON)
@@ -20,10 +20,13 @@ $db_name = "if0_40880172_dynasty_bot";
 
 // 🔥 CRASH PROTECTION: MySQL एरर से कोड क्रैश होने से बचाएगा
 mysqli_report(MYSQLI_REPORT_OFF);
-$conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
-if (!$conn->connect_error) { 
-    $conn->set_charset("utf8mb4"); 
-} else {
+$conn = null;
+try {
+    $conn = @new mysqli($db_host, $db_user, $db_pass, $db_name);
+    if ($conn && !$conn->connect_error) { 
+        $conn->set_charset("utf8mb4"); 
+    }
+} catch (Throwable $e) {
     error_log("⚠️ SPY DB WARNING: InfinityFree Blocked DB. Bot will continue safely using Firebase...");
 }
 
@@ -96,15 +99,20 @@ function send_whatsapp_api($to, $type, $content, $phone_id, $token) {
     error_log("🎯 SPY META RESPONSE [$httpcode]: " . $response);
 }
 
-// 5 Folders Deep Search Logic
-function findProfileInAllFolders($target_id) {
+// 🔥 NEW: SUPERFAST MASTER INDEX SEARCH (आपके आइडिया पर आधारित) 🔥
+function findProfileFast($target_id) {
     global $firebase_url;
-    $folders = ['profiles_v200', 'profiles_v300', 'profiles_v10_final', 'profiles_v100', 'profiles'];
-    foreach ($folders as $folder) {
-        $data = firebase_request($firebase_url . '/' . $folder . '.json?orderBy="id"&equalTo="' . $target_id . '"', 'GET');
-        if (!empty($data) && !isset($data['error'])) {
-            return $data[array_key_first($data)]; 
-        }
+    
+    // 1. पहले Master Index वाले फोल्डर में ID मैच करो
+    $index_data = firebase_request($firebase_url . '/master_profile_index/' . $target_id . '.json', 'GET');
+    
+    // 2. अगर इंडेक्स में मिल गया, तो सीधा असली फोल्डर से डेटा खींच लो
+    if (!empty($index_data) && isset($index_data['folder']) && isset($index_data['key'])) {
+        $folder = $index_data['folder'];
+        $key = $index_data['key'];
+        
+        $actual_profile = firebase_request($firebase_url . '/' . $folder . '/' . $key . '.json', 'GET');
+        return $actual_profile;
     }
     return null; 
 }
@@ -221,7 +229,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     error_log("🎯 SPY: My ID Found -> " . $sender_id);
                 }
                 
-                $t_profile_raw = findProfileInAllFolders($target_id);
+                // 🔥 CHANGED TO FAST SEARCH 🔥
+                $t_profile_raw = findProfileFast($target_id);
                 
                 if ($t_profile_raw !== null) {
                     $raw_phone = $t_profile_raw['phone'] ?? $t_profile_raw['mobile'] ?? '';
@@ -238,7 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         // FORMAT DATA
                         $t = get_profile_data($t_profile_raw);
-                        $s_profile_raw = $sender_id ? findProfileInAllFolders($sender_id) : null;
+                        $s_profile_raw = $sender_id ? findProfileFast($sender_id) : null;
                         $s = get_profile_data($s_profile_raw);
 
                         // 👑 ROYAL TEMPLATE (बिल्कुल आपका डिज़ाइन) 👑
